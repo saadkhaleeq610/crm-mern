@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcryptjs from 'bcryptjs';
+import bcrypt from 'bcryptjs';
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -38,8 +38,8 @@ UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
     return next();
   }
-  const salt = await bcryptjs.genSalt(10);
-  this.password = await bcryptjs.hash(this.password, salt);
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
 });
 
 // Method to check password
@@ -47,7 +47,7 @@ UserSchema.methods.matchPassword = async function(enteredPassword) {
   console.log("Matching password...");
   console.log("Entered password (first 4 characters):", enteredPassword.substring(0, 4));
   console.log("Stored password hash:", this.password);
-  const isMatch = await bcryptjs.compare(enteredPassword, this.password);
+  const isMatch = await bcrypt.compare(enteredPassword, this.password);
   console.log("Password match result:", isMatch);
   return isMatch;
 };
