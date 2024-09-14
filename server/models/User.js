@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import bcryptjs from 'bcryptjs';
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -20,24 +20,36 @@ const UserSchema = new mongoose.Schema({
     enum: ['admin', 'sales_representative', 'manager'],
     default: 'sales_representative'
   },
-  createdAt: {
+  lastLogin: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  resetPasswordToken: String,
+  resetPasswordExpiresAt: Date,
+  verificationToken: String,
+  verificationTokenExpiresAt: Date,
 });
 
-// Hash password before saving
 UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
+  const salt = await bcryptjs.genSalt(10);
+  this.password = await bcryptjs.hash(this.password, salt);
 });
 
 // Method to check password
 UserSchema.methods.matchPassword = async function(enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  console.log("Matching password...");
+  console.log("Entered password (first 4 characters):", enteredPassword.substring(0, 4));
+  console.log("Stored password hash:", this.password);
+  const isMatch = await bcryptjs.compare(enteredPassword, this.password);
+  console.log("Password match result:", isMatch);
+  return isMatch;
 };
 
 const User = mongoose.model('User', UserSchema);
